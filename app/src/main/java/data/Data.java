@@ -1,55 +1,86 @@
 package data;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.Index;
+import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
+
+import java.io.Serializable;
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
-public class Data {
+@Entity(tableName = "char" ,indices = {@Index("name")})
+public class Data implements Serializable{
 
     @SerializedName("_id")
     @Expose
     private String id;
+
     @SerializedName("dateOfBirth")
     @Expose
     private Integer dateOfBirth;
+
     @SerializedName("imageLink")
     @Expose
     private String imageLink;
+
     @SerializedName("male")
     @Expose
     private Boolean male;
+
     @SerializedName("spouse")
     @Expose
     private String spouse;
+
     @SerializedName("house")
     @Expose
     private String house;
+
     @SerializedName("slug")
     @Expose
+    
     private String slug;
+
     @SerializedName("name")
     @Expose
+    @PrimaryKey
+    @NonNull
     private String name;
+
     @SerializedName("__v")
     @Expose
+    
     private Integer v;
+
     @SerializedName("pageRank")
     @Expose
+    
     private Integer pageRank;
+
     @SerializedName("hasPath")
     @Expose
+    
     private Boolean hasPath;
+
     @SerializedName("books")
     @Expose
+    
     private List<String> books = null;
+
     @SerializedName("updatedAt")
     @Expose
+    
     private String updatedAt;
+
     @SerializedName("createdAt")
     @Expose
+    
     private String createdAt;
+
     @SerializedName("titles")
     @Expose
+    
     private List<String> titles = null;
 
     public String getId() {
