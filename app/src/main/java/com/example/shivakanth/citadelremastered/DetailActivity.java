@@ -1,12 +1,17 @@
 package com.example.shivakanth.citadelremastered;
 
+import android.app.AlertDialog;
 import android.arch.persistence.room.Room;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -15,6 +20,7 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import data.ApiUtils;
 import data.CDB;
@@ -33,6 +39,7 @@ public class DetailActivity extends AppCompatActivity {
     TextView n;
     ImageView img;
     String m;
+    public int isOK;
     ArrayList<Data> history;
     private static final String DATABASE_NAME = "char_db";
     private CDB CharDatabase;
@@ -43,7 +50,7 @@ public class DetailActivity extends AppCompatActivity {
         list = findViewById(R.id.det);
         img = findViewById(R.id.image);
         n = findViewById(R.id.name);
-
+        isOK =0;
 
 
         CharDatabase = Room.databaseBuilder(getApplicationContext(),
@@ -62,15 +69,42 @@ public class DetailActivity extends AppCompatActivity {
             Call<Character> call = ApiUtils.getGOTService().getCharacter(message);
             call.enqueue(new Callback<Character>() {
                 @Override
-                public void onResponse(Call<Character> call, Response<Character> response) {
-                    c = response.body().getData();
-                    Toast.makeText(DetailActivity.this, c.getName(), Toast.LENGTH_SHORT).show();
-                    onLoad(0);
+                public void onResponse(Call<Character> call, Response<Character> response)
+                {
+                    if(response.body().getMessage().equals("Success")) {
+                        c = response.body().getData();
+
+
+                        int kk = checkDB(c.getName());
+                        if(kk==0)
+                        {
+                            isOK = 1;
+                            onLoad(0);
+                        }
+                        else
+                        {
+                            isOK = 2;
+                            m=c.getName();
+                            imgLoad n = new imgLoad();
+                            n.execute();
+                        }
+                    }
+                    else
+                    {
+                        isOK =0;
+                        Intent intent = new Intent();
+                        setResult(0, intent);
+                        finish();
+                    }
                     }
 
                 @Override
                 public void onFailure(Call<Character> call, Throwable t) {
                     Toast.makeText(DetailActivity.this, "There was an error calling the API", Toast.LENGTH_SHORT).show();
+                    isOK = 0;
+                    Intent intent = new Intent();
+                    setResult(0, intent);
+                    finish();
                 }
 
             });
@@ -165,10 +199,46 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     public void onBackPressed()
     {
-        String data = c.getName();
-        Intent intent = new Intent();
-        intent.putExtra("newC",data);
-        setResult(1,intent);
-        finish();
+        if(isOK==1) {
+            String data = c.getName();
+            Intent intent = new Intent();
+            intent.putExtra("newC", data);
+            setResult(1, intent);
+            finish();
+        }
+        else if(isOK == 0)
+        {
+
+            Intent intent = new Intent();
+            setResult(0, intent);
+            finish();
+        }
+        else if(isOK == 2)
+        {
+            Intent intent = new Intent();
+            setResult(2, intent);
+            finish();
+
+        }
     }
+    public int checkDB(String tt) {
+        SQLiteDatabase DB = openOrCreateDatabase("data.db", MODE_PRIVATE, null);
+        DB.execSQL("CREATE TABLE IF NOT EXISTS data (name VARCHAR(200))");
+        String s="select * from data ";
+
+        Cursor myCursor = DB.rawQuery(s ,null);
+        int i = 0;
+
+        while (myCursor.moveToNext()) {
+            String temp = new String();
+            temp = myCursor.getString(0);
+            if(tt.equals(temp))
+            i++;
+        }
+
+        myCursor.close();
+        DB.close();
+        return i;
+    }
+
 }

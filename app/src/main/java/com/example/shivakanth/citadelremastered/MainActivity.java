@@ -1,6 +1,8 @@
 package com.example.shivakanth.citadelremastered;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,6 +15,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import data.Data;
 
@@ -28,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         search = findViewById(R.id.button);
         txt = findViewById(R.id.name);
+        int kk = checkDB();
+        if(kk!=0)
+            history = getDB();
 
         txt.setThreshold(0);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item,history);
@@ -68,20 +76,81 @@ public class MainActivity extends AppCompatActivity {
                 if(resultCode == 1)
                 {
                     history.add(data.getStringExtra("newC"));
-                    Toast.makeText(this, data.getStringExtra("newC"), Toast.LENGTH_SHORT).show();
+                    history = delDup(history);
+                    //Toast.makeText(this, data.getStringExtra("newC"), Toast.LENGTH_SHORT).show();
                     ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item,history);
                     txt.setAdapter(adapter);
+
                 }
+                else if(resultCode == 0)
+                {
+                    Toast.makeText(this, "There was an error", Toast.LENGTH_SHORT).show();
+                }
+
 
 
             }
         }
 
-    public void saveDB(String save)
-    {
-        SQLiteDatabase DB = openOrCreateDatabase("history.db",MODE_PRIVATE,null);
+    public void storeDB(ArrayList<String> t) {
+        SQLiteDatabase DB = openOrCreateDatabase("data.db", MODE_PRIVATE, null);
+        DB.execSQL("CREATE TABLE IF NOT EXISTS data (name VARCHAR(200))");
+        int i;
+        DB.execSQL("delete from data");
+        for (i = 0; i < t.size(); ++i) {
+            ContentValues row1 = new ContentValues();
+            row1.put("name", t.get(i));
+            DB.insert("data", null, row1);
+        }
+        DB.close();
+    }
+
+    public ArrayList<String> getDB() {
+        ArrayList<String> t = new ArrayList<String>();
+        SQLiteDatabase DB = openOrCreateDatabase("data.db", MODE_PRIVATE, null);
+        Cursor myCursor = DB.rawQuery("select * from data", null);
+        int i = 0;
+        String temp = null;
+        while (myCursor.moveToNext()) {
+            temp = new String();
+            temp = myCursor.getString(0);
+            t.add(temp);
+            i++;
+        }
+
+        myCursor.close();
+        DB.close();
+        return t;
+    }
+
+    public int checkDB() {
+        SQLiteDatabase DB = openOrCreateDatabase("data.db", MODE_PRIVATE, null);
         DB.execSQL("CREATE TABLE IF NOT EXISTS data (name VARCHAR(200))");
 
+        Cursor myCursor = DB.rawQuery("select * from data", null);
+        int i = 0;
+
+        while (myCursor.moveToNext()) {
+            i++;
+        }
+
+        myCursor.close();
+        DB.close();
+        return i;
+    }
+    public ArrayList<String> delDup(ArrayList<String> tt)
+    {
+
+        List<String> al = new ArrayList<>(tt);
+        Set<String> hs = new HashSet<>();
+        hs.addAll(al);
+        al.clear();
+        al.addAll(hs);
+        tt = new ArrayList<>(al);
+
+        storeDB(tt);
+
+        return tt;
 
     }
     }

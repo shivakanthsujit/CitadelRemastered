@@ -22,10 +22,11 @@ public interface CDAO {
     @Query("SELECT * FROM char")
     List<Data> getC();
 
-
-
     @Query ("SELECT * FROM char WHERE name = :n")
     Data fetchC (String n);
+
+    @Query ("SELECT * FROM char WHERE name = :n")
+    List<Data> checkC (String n);
 
     //include any methods to fetch specific user
     // @Query("SELECT * FROM User")
