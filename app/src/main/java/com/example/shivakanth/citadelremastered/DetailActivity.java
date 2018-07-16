@@ -190,6 +190,29 @@ public class DetailActivity extends AppCompatActivity {
             temp.sub=String.valueOf(c.getDateOfBirth());
             attr.add(temp);
         }
+        if(c.getSpouse()!=null)
+        {
+            DataS temp=new DataS();
+            temp.head="Spouse";
+            temp.sub=String.valueOf(c.getSpouse());
+            attr.add(temp);
+        }
+        if(c.getBooks()!=null)
+        {
+            DataS temp=new DataS();
+            temp.head="Appears in";
+            List<String> a = c.getBooks();
+            String tt = "";
+            for(int kk = 0;kk<a.size();++kk)
+                if(kk!=a.size()-1)
+                    tt+=a.get(kk) + ", ";
+                else
+                    tt+=a.get(kk);
+
+
+            temp.sub=String.valueOf(tt);
+            attr.add(temp);
+        }
         ListAdapter lis = new ListAdapter(this,attr);
         list.setAdapter(lis);
     }
